@@ -6,16 +6,15 @@
       אנא העלה קובץ Excel בפורמט המתאים עם העדפות התלמידים
     </p>
 
-    <label for="excelInput">
-      <button mat-stroked-button color="primary">העלה קובץ Excel</button>
-    </label>
-
     <input
       type="file"
       id="excelInput"
-      hidden
       (change)="onFileSelected($event)"
       accept=".xlsx"
     />
+    <button mat-raised-button (click)="fileInput.click()">
+      בחר קובץ Excel
+    </button>
+    <input type="file" #fileInput hidden (change)="onFileSelected($event)" />
   </mat-card-content>
 </mat-card>
