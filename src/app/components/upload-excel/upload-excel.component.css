@@ -1,0 +1,32 @@
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.upload-card {
+  max-width: 400px;
+  margin: auto;
+  padding: 24px;
+  text-align: center;
+}
+
+input[type="file"] {
+  display: none; /* hides the default file input */
+}
+
+p {
+  margin: 0;
+}
+
+mat-card-title {
+  margin-bottom: 16px;
+}
+
+mat-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* adjust spacing as needed */
+  align-items: center; /* optional: centers the button and text */
+}

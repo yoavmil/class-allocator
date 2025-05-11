@@ -1,0 +1,21 @@
+<mat-card class="upload-card" appearance="raised">
+  <mat-card-title> ברוכים הבאים למערכת שיבוץ תלמידים </mat-card-title>
+
+  <mat-card-content>
+    <p class="note" dir="rtl">
+      אנא העלה קובץ Excel בפורמט המתאים עם העדפות התלמידים
+    </p>
+
+    <label for="excelInput">
+      <button mat-stroked-button color="primary">העלה קובץ Excel</button>
+    </label>
+
+    <input
+      type="file"
+      id="excelInput"
+      hidden
+      (change)="onFileSelected($event)"
+      accept=".xlsx"
+    />
+  </mat-card-content>
+</mat-card>
