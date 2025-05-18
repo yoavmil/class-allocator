@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { ExcelService } from '../services/excel.service';
 import { StudentService } from '../services/student.service';
+import { ConfigService } from '../services/config.service';
 
 @Component({
   selector: 'app-header',
@@ -11,7 +12,8 @@ import { StudentService } from '../services/student.service';
 export class HeaderComponent {
   public constructor(
     private excelService: ExcelService,
-    private studentService: StudentService
+    private studentService: StudentService,
+    public configService: ConfigService
   ) {}
 
   onFileSelected(event: Event): void {

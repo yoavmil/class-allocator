@@ -1,4 +1,12 @@
 button {
-    margin-left: 1rem;
-    margin-right: 1rem;
+  margin-left: 1rem;
+  margin-right: 1rem;
 }
+
+.my-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;         /* 👈 space between elements */
+  padding: 0 16px;   /* optional: horizontal padding */
+}
+

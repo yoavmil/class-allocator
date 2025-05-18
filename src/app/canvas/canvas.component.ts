@@ -25,9 +25,13 @@ export class CanvasComponent {
   public get hasData(): boolean {
     return this.studentService.getAll().length > 0;
   }
+  ngOnInit(): void {
+    this.configService.classCount$.subscribe((value) => {
+      this.onResize();
+    });
+  }
   ngAfterViewInit(): void {
-    this.resizeCanvasToFit();
-    this.drawCanvas();
+    this.onResize();
   }
 
   @HostListener('window:resize', ['$event'])

@@ -1,7 +1,6 @@
 <mat-toolbar color="primary">
-  <mat-toolbar-row>
+  <mat-toolbar-row class="my-header">
     <span>כלי עזר לחלוקה לכיתות</span>
-    <span class="spacer"></span>
     <input
       type="file"
       #fileInput
@@ -15,5 +14,14 @@
     <div *ngIf="!hasData" class="no-data">
       <p>נא לטעון קובץ אקסל</p>
     </div>
+
+    <span>מספר כיתות:</span>
+    <input
+      matInput
+      type="number"
+      min="1"
+      max="12"
+      [(ngModel)]="configService.classCount"
+    />
   </mat-toolbar-row>
 </mat-toolbar>
