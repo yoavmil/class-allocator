@@ -12,5 +12,8 @@
     <button mat-icon-button (click)="fileInput.click()">
       <mat-icon>upload-file</mat-icon>
     </button>
+    <div *ngIf="!hasData" class="no-data">
+      <p>נא לטעון קובץ אקסל</p>
+    </div>
   </mat-toolbar-row>
 </mat-toolbar>

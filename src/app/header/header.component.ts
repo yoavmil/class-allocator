@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { ExcelService } from '../services/excel.service';
+import { StudentService } from '../services/student.service';
 
 @Component({
   selector: 'app-header',
@@ -8,7 +9,10 @@ import { ExcelService } from '../services/excel.service';
   styleUrl: './header.component.css',
 })
 export class HeaderComponent {
-  public constructor(private excelService: ExcelService) {}
+  public constructor(
+    private excelService: ExcelService,
+    private studentService: StudentService
+  ) {}
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -16,5 +20,9 @@ export class HeaderComponent {
       const file = input.files[0];
       this.excelService.loadFromExcel(file);
     }
+  }
+
+  public get hasData(): boolean {
+    return this.studentService.getAll().length > 0;
   }
 }
