@@ -1,0 +1,16 @@
+<mat-toolbar color="primary">
+  <mat-toolbar-row>
+    <span>כלי עזר לחלוקה לכיתות</span>
+    <span class="spacer"></span>
+    <input
+      type="file"
+      #fileInput
+      hidden
+      (change)="onFileSelected($event)"
+      accept=".xlsx"
+    />
+    <button mat-icon-button (click)="fileInput.click()">
+      <mat-icon>upload-file</mat-icon>
+    </button>
+  </mat-toolbar-row>
+</mat-toolbar>
