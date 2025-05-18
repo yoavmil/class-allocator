@@ -1,1 +1,9 @@
-<p>canvas works!</p>
+<div *ngIf="!hasData" class="no-data">
+  <p>נא לטעון קובץ אקסל</p>
+</div>
+
+<canvas
+  #studentCanvas
+  class="full-canvas"
+  style="border: 0px solid #ccc"
+></canvas>
