@@ -3,6 +3,7 @@ import { StudentService } from '../services/student.service';
 import { ConfigService } from '../services/config.service';
 import { AfterViewInit } from '@angular/core';
 import { OnInit } from '@angular/core';
+import { Student } from '../models/student';
 
 @Component({
   selector: 'app-canvas',
@@ -11,8 +12,16 @@ import { OnInit } from '@angular/core';
   styleUrl: './canvas.component.css',
 })
 export class CanvasComponent {
-  @ViewChild('studentCanvas', { static: true })
-  canvasRef!: ElementRef<HTMLCanvasElement>;
+  unallocatedRadius = 200;
+  // Camera/viewport controls
+  zoom = 1;
+  offsetX = 0;
+  offsetY = 0;
+  // Pan handling
+  private isPanning = false;
+  private lastX = 0;
+  private lastY = 0;
+  draggingStudent: any = null;
 
   private get classCount(): number {
     return this.configService.classCount;
@@ -22,89 +31,137 @@ export class CanvasComponent {
     private studentService: StudentService,
     private configService: ConfigService
   ) {}
+
   public get hasData(): boolean {
     return this.studentService.getAll().length > 0;
   }
+
   ngOnInit(): void {
     this.configService.classCount$.subscribe((value) => {
       this.onResize();
     });
   }
+
   ngAfterViewInit(): void {
     this.onResize();
   }
 
   @HostListener('window:resize', ['$event'])
-  onResize() {
-    this.resizeCanvasToFit();
-    this.drawCanvas();
-  }
+  onResize() {}
 
-  private resizeCanvasToFit(): void {
-    const canvas = this.canvasRef.nativeElement;
-    const parent = canvas.parentElement;
-    if (!parent) return;
+  students = [ // TODO temp dummy data
+    { name: 'Alice', x: -30, y: -100 },
+    { name: 'Bob', x: 100, y: 100 },
+    // ...
+  ];
 
-    canvas.width = parent.clientWidth;
-    canvas.height = parent.clientHeight;
-  }
-
-  private drawCanvas(): void {
-    const canvas = this.canvasRef.nativeElement;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const width = canvas.width;
-    const height = canvas.height;
-    const centerX = width / 2;
-    const centerY = height / 2;
-
-    ctx.clearRect(0, 0, width, height);
-
-    // === Draw class zones ===
-    const anglePerClass = (2 * Math.PI) / this.classCount;
-    const outerRadius = Math.max(centerX, centerY) * 2;
-    const unallocatedRadius = 200;
-
-    for (let i = 0; i < this.classCount; i++) {
-      const startAngle = i * anglePerClass;
-      const endAngle = startAngle + anglePerClass;
-
-      ctx.beginPath();
-      ctx.moveTo(centerX, centerY);
-      ctx.arc(centerX, centerY, outerRadius, startAngle, endAngle);
-      ctx.closePath();
-
-      ctx.fillStyle = this.getColor(i);
-      ctx.fill();
-    }
-
-    // === Draw central unallocated circle ===
-
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, unallocatedRadius, 0, 2 * Math.PI);
-    ctx.fillStyle = 'white';
-    ctx.fill();
-
-    ctx.fillStyle = 'black';
-    ctx.font = '16px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText(this.unallocatedLabel, centerX, centerY + 5);
-  }
-
-  private get unallocatedLabel(): string {
+  public get unallocatedLabel(): string {
     return 'לא משוייכים';
   }
 
-  private getColor(index: number): string {
-    const colors = [
-      '#FFCDD2',
-      '#C8E6C9',
-      '#BBDEFB',
-      '#FFF9C4',
-      '#D1C4E9',
-      '#B2EBF2',
-    ];
-    return colors[index % colors.length];
+  getColor(index: number): string {
+    const palette = ['#ff9999', '#99ccff', '#99ff99', '#ffcc99', '#ccccff'];
+    return palette[index % palette.length];
+  }
+
+  get viewBox() {
+    return `${-window.innerWidth / 2 / this.zoom - this.offsetX} ${
+      -window.innerHeight / 2 / this.zoom - this.offsetY
+    } ${window.innerWidth / this.zoom} ${window.innerHeight / this.zoom}`;
+  }
+
+  onMouseDown(event: MouseEvent) {
+    this.isPanning = true;
+    this.lastX = event.clientX;
+    this.lastY = event.clientY;
+  }
+  startDrag(event: MouseEvent, student: any) {
+    event.stopPropagation(); // prevent pan
+    this.draggingStudent = student;
+    this.lastX = event.clientX;
+    this.lastY = event.clientY;
+  }
+
+  onMouseMove(event: MouseEvent) {
+    if (this.draggingStudent) {
+      const dx = (event.clientX - this.lastX) / this.zoom;
+      const dy = (event.clientY - this.lastY) / this.zoom;
+      this.draggingStudent.x += dx;
+      this.draggingStudent.y += dy;
+      this.lastX = event.clientX;
+      this.lastY = event.clientY;
+    } else if (this.isPanning) {
+      const dx = (event.clientX - this.lastX) / this.zoom;
+      const dy = (event.clientY - this.lastY) / this.zoom;
+      this.offsetX += dx;
+      this.offsetY += dy;
+      this.lastX = event.clientX;
+      this.lastY = event.clientY;
+    }
+  }
+
+  onMouseUp() {
+    this.isPanning = false;
+    this.draggingStudent = null;
+  }
+
+  onWheel(event: WheelEvent) {
+    if (this.draggingStudent) return;
+    event.preventDefault();
+    const delta = -event.deltaY * 0.001;
+    this.zoom *= 1 + delta;
+    this.zoom = Math.min(Math.max(this.zoom, 0.2), 5);
+  }
+
+  get classSectors() {
+    const sectors = [];
+    const anglePerClass = (2 * Math.PI) / this.classCount;
+    const outerRadius = 1000; // Far enough to fill view
+
+    for (let i = 0; i < this.classCount; i++) {
+      const start = i * anglePerClass;
+      const end = start + anglePerClass;
+      sectors.push({
+        path: this.describeSector(
+          0,
+          0,
+          this.unallocatedRadius,
+          outerRadius,
+          start,
+          end
+        ),
+        color: this.getColor(i),
+      });
+    }
+
+    return sectors;
+  }
+
+  describeSector(
+    cx: number,
+    cy: number,
+    innerR: number,
+    outerR: number,
+    startAngle: number,
+    endAngle: number
+  ): string {
+    const polarToCartesian = (r: number, angle: number) => ({
+      x: cx + r * Math.cos(angle),
+      y: cy + r * Math.sin(angle),
+    });
+
+    const p1 = polarToCartesian(outerR, startAngle);
+    const p2 = polarToCartesian(outerR, endAngle);
+    const p3 = polarToCartesian(innerR, endAngle);
+    const p4 = polarToCartesian(innerR, startAngle);
+    const largeArcFlag = endAngle - startAngle > Math.PI ? 1 : 0;
+
+    return `
+      M ${p1.x} ${p1.y}
+      A ${outerR} ${outerR} 0 ${largeArcFlag} 1 ${p2.x} ${p2.y}
+      L ${p3.x} ${p3.y}
+      A ${innerR} ${innerR} 0 ${largeArcFlag} 0 ${p4.x} ${p4.y}
+      Z
+    `.trim();
   }
 }

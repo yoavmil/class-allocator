@@ -1,5 +1,45 @@
-<canvas
-  #studentCanvas
-  class="full-canvas"
-  style="border: 0px solid #ccc"
-></canvas>
+<svg
+  [attr.viewBox]="viewBox"
+  (mousedown)="onMouseDown($event)"
+  (mousemove)="onMouseMove($event)"
+  (mouseup)="onMouseUp()"
+  (mouseleave)="onMouseUp()"
+  (wheel)="onWheel($event)"
+  style="width: 100%; height: 100%; border: 0px #ccc"
+>
+  <g *ngFor="let sector of classSectors">
+    <path
+      [attr.d]="sector.path"
+      [attr.fill]="sector.color"
+      fill-opacity="0.3"
+    />
+  </g>
+
+  <!-- Unallocated central circle -->
+  <circle
+    [attr.cx]="0"
+    [attr.cy]="0"
+    [attr.r]="unallocatedRadius"
+    fill="white"
+    stroke="black"
+  />
+  <text x="0" y="5" text-anchor="middle" font-size="16">
+    {{ unallocatedLabel }}
+  </text>
+  <g
+    *ngFor="let student of students"
+    [attr.transform]="'translate(' + student.x + ',' + student.y + ')'"
+    style="cursor: grab"
+  >
+    <rect
+      x="-30"
+      y="-10"
+      width="60"
+      height="20"
+      fill="lightblue"
+      stroke="black"
+      (mousedown)="startDrag($event, student)"
+    />
+    <text x="0" y="5" text-anchor="middle">{{ student.name }}</text>
+  </g>
+</svg>
