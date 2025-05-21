@@ -40,6 +40,7 @@ export class CanvasComponent {
     this.configService.classCount$.subscribe((value) => {
       this.onResize();
     });
+    this.studentService.students$.subscribe((value) => (this.students = value));
   }
 
   ngAfterViewInit(): void {
@@ -49,11 +50,7 @@ export class CanvasComponent {
   @HostListener('window:resize', ['$event'])
   onResize() {}
 
-  students = [ // TODO temp dummy data
-    { name: 'Alice', x: -30, y: -100 },
-    { name: 'Bob', x: 100, y: 100 },
-    // ...
-  ];
+  students: Student[] = [];
 
   public get unallocatedLabel(): string {
     return 'לא משוייכים';
@@ -163,5 +160,44 @@ export class CanvasComponent {
       A ${innerR} ${innerR} 0 ${largeArcFlag} 0 ${p4.x} ${p4.y}
       Z
     `.trim();
+  }
+
+  get connectionLines() {
+    const lines: {
+      x1: number;
+      y1: number;
+      x2: number;
+      y2: number;
+      weight: number;
+    }[] = [];
+
+    for (const student of this.students) {
+      if (!student.x || !student.y || !student.preferences) continue;
+
+      for (const [weightStr, targetNameOrId] of Object.entries(
+        student.preferences
+      )) {
+        const weight = Number(weightStr);
+        const target = this.students.find(
+          (s) =>
+            s.name === targetNameOrId ||
+            s.id?.toString() === targetNameOrId.toString()
+        );
+        if (target?.x != null && target?.y != null) {
+          lines.push({
+            x1: student.x,
+            y1: student.y,
+            x2: target.x,
+            y2: target.y,
+            weight,
+          });
+        }
+      }
+    }
+
+    return lines;
+  }
+  abs(value: number): number {
+    return Math.abs(value);
   }
 }

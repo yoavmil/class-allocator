@@ -73,6 +73,8 @@ export class ExcelService {
         name: rawName,
         gender,
         preferences,
+        x: 0, // TODO read those from the excel row
+        y: 0, // TODO random them inside the unallocated circle
       };
     });
   }

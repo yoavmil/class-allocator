@@ -1,1 +1,7 @@
 
+svg text {/* this is for preventing text selection when dragging */
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
